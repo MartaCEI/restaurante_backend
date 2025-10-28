@@ -14,8 +14,8 @@ router.get('/admin/users', authMiddleware, getAllUsers);
 
 // Rutas de menu(dishes)
 router.get('/dishes', getAllDishes) // getAllDishes()
-router.get('/dishes/:id', getDishById) // getDishById(id)
-router.get('/dishes/:type', getDishesByType) // getDishesByType(type)
+router.get('/dishes/type/:type', getDishesByType); // getDishesByType(type)
+router.get('/dishes/id/:id', getDishById); // getDishById(id)
 router.post('/dishes', authMiddleware, createDish) // createDish(dishData)
 router.patch('/dishes/deletedAt/:id', authMiddleware, updateDishdeletedAt) // updateDish(id)
 router.patch('/dishes/updateField/:id', authMiddleware, updateDishField) // updateDishField(id), (key, value)

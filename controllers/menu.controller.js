@@ -73,7 +73,7 @@ export const getDishesByType = async (req, res, next) => {
         }
         responseAPI.msg = "Plato encontrado con éxito";
         responseAPI.count = 1;
-        responseAPI.data = dish;
+        responseAPI.data = dishes;
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
