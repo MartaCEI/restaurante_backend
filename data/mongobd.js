@@ -54,6 +54,37 @@ const userSchema = new mongoose.Schema({
     versionKey: false   // Desactiva el campo __v
 });
 
-// Exportar el modelo
+// Modelo Menu
+const menuSchema = new mongoose.Schema({
+    type: { 
+        type: String,
+        required: true 
+    },
+    name: { 
+        type: String,
+        required: true 
+    },
+    description: { 
+        type: String,
+        required: true 
+    },
+    price: { 
+        type: Number,
+        required: true 
+    },
+    imageUrl: String,
+    deletedAt: { 
+        type: String,
+        default: null  
+    }
+},
+{
+    timestamps: true,
+    strict: false,
+    versionKey: false
+});
+
+// Exportar el modelos
 export const User = mongoose.model('User', userSchema);
+export const Menu = mongoose.model('Menu', menuSchema);
 export default connectDB;
