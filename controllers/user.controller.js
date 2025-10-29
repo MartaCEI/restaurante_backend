@@ -99,7 +99,7 @@ export const createUser = async (req, res ,next) => {
 // updateUserdeletedAt(id) Este va a ser un soft delete 
 export const updateUserdeletedAt = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const date = new Date();
         const deletedUser = await Menu.findByIdAndUpdate(
             id,           // id del correo que queremos update
@@ -128,7 +128,7 @@ export const updateUserdeletedAt = async (req, res, next) => {
 // Elimina un documento entero de la BBDD.
 export const deleteUserPermanently = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const deletedUser = await Menu.findByIdAndDelete(id)
         if (!deletedUser) {
             responseAPI.msg = `Plato con id ${id} no encontrado`;

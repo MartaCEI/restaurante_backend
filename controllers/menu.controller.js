@@ -37,7 +37,7 @@ export const getAllDishes = async (req, res, next) => {
 // getDishById(id) Obtiene el plato que se manda desde el body con el id. 
 export const getDishById = async (req, res, next) => {
     try {
-        const id = req.params.id;
+        const {id} = req.params;
         const dish = await Menu.findById(id);
         if (!dish) {
             responseAPI.msg = "Plato no encontrado";
@@ -61,7 +61,7 @@ export const getDishById = async (req, res, next) => {
 // Esta funcion es perfecta para filtrar por tipo de plato. 
 export const getDishesByType = async (req, res, next) => {
     try {
-        const type = req.params.type;
+        const { type } = req.params;
         const dishes = await Menu.find({
             type: { $regex: type, $options: "i" }
         });
@@ -110,7 +110,7 @@ export const createDish = async (req, res, next) => {
 // updateDish(id) Este va a ser un soft delete 
 export const updateDishdeletedAt = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const date = new Date();
         const deletedDish = await Menu.findByIdAndUpdate(
             id,           // id del correo que queremos update
@@ -135,28 +135,18 @@ export const updateDishdeletedAt = async (req, res, next) => {
     }
 }
 
-// updateDishField (id, campo, valor) Cambia todos los valores del plato segun su id.
+// updateDish (id, campo, valor) Cambia todos los valores del plato segun su id.
 // Recibe del front el campo (type, name, description...) y el nuevo valor. 
 // key: value
-export const updateDishField = async (req, res, next) => {
+export const updateDish = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { key, value } = req.body;
+        const { name, price, description, type, imageUrl } = req.body;
 
-        // Validación básica
-        if (!id || !key || value === undefined) {
-            responseAPI.msg = "Faltan datos para actualizar el plato";
-            responseAPI.status = "error";
-            return res.status(400).json(responseAPI);
-        }
-
-        // Crear objeto dinámico para actualizar
-        // [campo] = valor crea un objeto donde la clave es el valor de la variable campo, no la palabra "campo".
-        // Esto permite actualizar cualquier campo que venga desde req.body.
-        // Actualización en la base de datos
+        // Actualiza todos los campos mandados por el front
         const updatedDish = await Menu.findByIdAndUpdate(
             id,
-            { [key]: value },
+            { name:name, price:price, description:description, type:type, imageUrl:imageUrl },
             { new: true }
         );
 
@@ -168,6 +158,7 @@ export const updateDishField = async (req, res, next) => {
         responseAPI.msg = "Plato actualizado con éxito";
         responseAPI.status = "ok"
         responseAPI.data = updatedDish;
+        responseAPI.count = 1;
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -179,7 +170,7 @@ export const updateDishField = async (req, res, next) => {
 // Elimina un documento entero de la BBDD.
 export const deleteDish = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const deletedDish = await Menu.findByIdAndDelete(id)
         if (!deletedDish) {
             responseAPI.msg = `Plato con id ${id} no encontrado`;

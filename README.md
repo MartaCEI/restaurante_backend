@@ -632,7 +632,7 @@ export const updateDishdeletedAt = async (req, res, next) => {
 // updateDishField (id, campo, valor) Cambia todos los valores del plato segun su id.
 // Recibe del front el campo (type, name, description...) y el nuevo valor. 
 // key: value
-export const updateDishField = async (req, res, next) => {
+export const updateDish = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { key, value } = req.body;
