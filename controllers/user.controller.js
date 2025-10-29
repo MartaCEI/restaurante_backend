@@ -26,6 +26,7 @@ export const getAllUsers = async (req, res, next) => {
         responseAPI.msg = "Usuarios encontrados correctamente"
         responseAPI.count = users.length;
         responseAPI.data = users;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -63,7 +64,8 @@ export const userLogin = async (req, res, next) => {
         const token = jwt.sign({username:username}, JWT_SECRET, {expiresIn: "24h"});
         responseAPI.msg = "Login exitoso.";
         responseAPI.count = 1;
-        responseAPI.data = { name: user.name, username: user.username, token};
+        responseAPI.status = "ok"
+        responseAPI.data = { name: user.name, username: user.username, admin: user.isAdmin || false, token};
         res.status(200).json(responseAPI);
     } catch (error) {
         console.error(error);
@@ -86,8 +88,57 @@ export const createUser = async (req, res ,next) => {
         responseAPI.msg = "Usuario registrado correctamente"
         responseAPI.count = 1;
         responseAPI.data = newUser;
-        // *** PRUEBAS SOLO ***
-        // Esto es solo para pruebas, quitarlo a la hora de que todas las pruebas funcionen bien. 
+        responseAPI.status = "ok"
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// updateUserdeletedAt(id) Este va a ser un soft delete 
+export const updateUserdeletedAt = async (req, res, next) => {
+    try {
+        const { id } = req.params.id;
+        const date = new Date();
+        const deletedUser = await Menu.findByIdAndUpdate(
+            id,           // id del correo que queremos update
+            { deletedAt: date },    // las variables que queremos cambiar
+            { new: true }         // Devuelve el documento modificado
+        );
+        if (!deletedUser) {
+            responseAPI.msg = `Plato con id ${id} no encontrado`;
+            responseAPI.count = 0;
+            responseAPI.status = "error";
+            responseAPI.data = null;
+            res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = `Plato con id ${id} soft deleted`;
+        responseAPI.count = 1;
+        responseAPI.data = deletedUser;
+        responseAPI.status = "ok"
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+}
+
+// deleteUserPermanently(id). No se recomendable pero es parte del CRUD. 
+// Elimina un documento entero de la BBDD.
+export const deleteUserPermanently = async (req, res, next) => {
+    try {
+        const { id } = req.params.id;
+        const deletedUser = await Menu.findByIdAndDelete(id)
+        if (!deletedUser) {
+            responseAPI.msg = `Plato con id ${id} no encontrado`;
+            responseAPI.count = 0;
+            responseAPI.data = null;
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "PLato eliminado correctamente";
+        responseAPI.count = 1;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);

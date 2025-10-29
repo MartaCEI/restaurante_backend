@@ -26,6 +26,7 @@ export const getAllDishes = async (req, res, next) => {
         responseAPI.msg = "Platos del menú recibidos con éxito";
         responseAPI.count = dishes.length;
         responseAPI.data = dishes;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -48,6 +49,7 @@ export const getDishById = async (req, res, next) => {
         responseAPI.msg = "Plato encontrado con éxito";
         responseAPI.count = 1;
         responseAPI.data = dish;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -74,6 +76,7 @@ export const getDishesByType = async (req, res, next) => {
         responseAPI.msg = "Plato encontrado con éxito";
         responseAPI.count = 1;
         responseAPI.data = dishes;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -96,6 +99,7 @@ export const createDish = async (req, res, next) => {
         responseAPI.msg = "Plato creado correctamente";
         responseAPI.count = 1;
         responseAPI.data = newDish;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -123,6 +127,7 @@ export const updateDishdeletedAt = async (req, res, next) => {
         responseAPI.msg = `Plato con id ${id} soft deleted`;
         responseAPI.count = 1;
         responseAPI.data = deletedDish;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -161,7 +166,7 @@ export const updateDishField = async (req, res, next) => {
             return res.status(404).json(responseAPI);
         }
         responseAPI.msg = "Plato actualizado con éxito";
-        responseAPI.status = "success";
+        responseAPI.status = "ok"
         responseAPI.data = updatedDish;
         res.status(200).json(responseAPI);
     } catch (error) {
@@ -184,6 +189,7 @@ export const deleteDish = async (req, res, next) => {
         }
         responseAPI.msg = "PLato eliminado correctamente";
         responseAPI.count = 1;
+        responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
