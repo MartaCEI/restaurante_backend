@@ -96,12 +96,40 @@ export const createUser = async (req, res ,next) => {
     }
 };
 
+export const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, username, street, city, cp, isAdmin } = req.body;
+
+        // Actualiza todos los campos mandados por el front
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { name:name, username:username, street:street, city:city, cp:cp, isAdmin:isAdmin },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            responseAPI.msg = `Plato con id ${id} no encontrado`;
+            responseAPI.status = "error";
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Plato actualizado con éxito";
+        responseAPI.status = "ok"
+        responseAPI.data = updatedUser;
+        responseAPI.count = 1;
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 // updateUserdeletedAt(id) Este va a ser un soft delete 
 export const updateUserdeletedAt = async (req, res, next) => {
     try {
         const { id } = req.params;
         const date = new Date();
-        const deletedUser = await Menu.findByIdAndUpdate(
+        const deletedUser = await User.findByIdAndUpdate(
             id,           // id del correo que queremos update
             { deletedAt: date },    // las variables que queremos cambiar
             { new: true }         // Devuelve el documento modificado
@@ -129,15 +157,38 @@ export const updateUserdeletedAt = async (req, res, next) => {
 export const deleteUserPermanently = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const deletedUser = await Menu.findByIdAndDelete(id)
+        const deletedUser = await User.findByIdAndDelete(id)
         if (!deletedUser) {
             responseAPI.msg = `Plato con id ${id} no encontrado`;
             responseAPI.count = 0;
             responseAPI.data = null;
             return res.status(404).json(responseAPI);
         }
-        responseAPI.msg = "PLato eliminado correctamente";
+        responseAPI.msg = "Plato eliminado correctamente";
         responseAPI.count = 1;
+        responseAPI.status = "ok"
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// getUserById(id) Obtiene el plato que se manda desde el body con el id. 
+export const getUserById = async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            responseAPI.msg = "Plato no encontrado";
+            responseAPI.count = 0;
+            responseAPI.status = "error";
+            responseAPI.data = null;
+            res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Plato encontrado con éxito";
+        responseAPI.count = 1;
+        responseAPI.data = user;
         responseAPI.status = "ok"
         res.status(200).json(responseAPI);
     } catch (error) {

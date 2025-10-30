@@ -452,12 +452,17 @@ export const admin = (req, res) => {
 En esta segunda fase del backend implementaremos los modelos restantes (Menu, Pedido, Reserva) y sus respectivas rutas y controladores. También añadiremos funcionalidades adicionales como la gestión de archivos con Multer y la implementación de roles de usuario (admin y cliente).
 
 ## Lista de tareas backend
-- [x] Crear modelo Menu data/mongodb.js
+- [x] Crear `modelo Menu` data/mongodb.js
 - [x] Crear controlador para Menu.
+- [x] Update `controller de Users` para añadir roles de usuario (isAdmin)
 - [x] Crear rutas para Menu en index.routes.js
 - [-] Implementar subida de archivos con Multer para imágenes de menú
-- [ ] Añadir roles de usuario (admin y cliente) y proteger rutas según el rol
-- [ ] Testing con ThunderClient de todas las nuevas rutas y funcionalidades.
+- [x] Añadir roles de usuario (admin y cliente) y proteger rutas según el rol
+- [x] Crear `modelo Events` data/mongodb.js
+- [x] Crear controlador para los eventos.
+- [x] Crear `modelo Orders` data/mongodb.js
+- [x] Crear controlador para los pedidos.
+- [x] Crear rutas y rutas protegidas para Pedidos y Eventos en index.routes.js
 
 1. Crear modelo Menu data/mongodb.js
 El modelo Menu tendrá los campos: type (tapas, platos principales, postres...), name (nombre del plato), description (descripción del plato), price (precio del plato), imageUrl (URL de la imagen del plato).
@@ -508,8 +513,6 @@ const responseAPI = {
     count: 0,
     status: "ok"
 };
-
-// https://picsum.photos/200
 
 // getAllDishes()  Obtiene todos los platos del menuSchema
 export const getAllDishes = async (req, res, next) => {
@@ -603,7 +606,7 @@ export const createDish = async (req, res, next) => {
 };
 
 // updateDish(id) Este va a ser un soft delete 
-export const updateDishdeletedAt = async (req, res, next) => {
+export const softDeleteDish = async (req, res, next) => {
     try {
         const { id } = req.params.id;
         const date = new Date();
@@ -629,28 +632,15 @@ export const updateDishdeletedAt = async (req, res, next) => {
     }
 }
 
-// updateDishField (id, campo, valor) Cambia todos los valores del plato segun su id.
-// Recibe del front el campo (type, name, description...) y el nuevo valor. 
-// key: value
 export const updateDish = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { key, value } = req.body;
+        const { name, price, description, type, imageUrl } = req.body;
 
-        // Validación básica
-        if (!id || !key || value === undefined) {
-            responseAPI.msg = "Faltan datos para actualizar el plato";
-            responseAPI.status = "error";
-            return res.status(400).json(responseAPI);
-        }
-
-        // Crear objeto dinámico para actualizar
-        // [campo] = valor crea un objeto donde la clave es el valor de la variable campo, no la palabra "campo".
-        // Esto permite actualizar cualquier campo que venga desde req.body.
-        // Actualización en la base de datos
+        // Actualiza todos los campos mandados por el front
         const updatedDish = await Menu.findByIdAndUpdate(
             id,
-            { [key]: value },
+            { name:name, price:price, description:description, type:type, imageUrl:imageUrl },
             { new: true }
         );
 
@@ -660,8 +650,9 @@ export const updateDish = async (req, res, next) => {
             return res.status(404).json(responseAPI);
         }
         responseAPI.msg = "Plato actualizado con éxito";
-        responseAPI.status = "success";
+        responseAPI.status = "ok"
         responseAPI.data = updatedDish;
+        responseAPI.count = 1;
         res.status(200).json(responseAPI);
     } catch (error) {
         console.log(error);
@@ -694,33 +685,354 @@ export const deleteDish = async (req, res, next) => {
 3. Crear rutas para Menu en index.routes.js
 ```js routes/index.routes.js
 import { createDish, updateDishdeletedAt, updateDishField, deleteDish } from '../controllers/menu.controller.js';   
-// Rutas de menu(dishes)
-router.get('/dishes', getAllDishes) // getAllDishes()
-router.get('/dishes/:id', getDishById) // getDishById(id)
-router.get('/dishes/:type', getDishesByType) // getDishesByType(type)
-router.post('/dishes', createDish) // createDish(dishData)
-router.patch('/dishes/deletedAt/:id', updateDishdeletedAt) // updateDish(id)
-// router.patch('/dishes/updateField/:id', updateDishField) // updateDishField (id, campo, valor)
-router.delete('/dishes', deleteDish) //deleteDish(id)
+// Rutas Menu(dishes)
+router.get('/dishes/type/:type', getDishesByType); // getDishesByType(type)
+router.get('/dishes/id/:id', getDishById); // getDishById(id)
 ```
 
-5. Añadir roles de usuario (admin y cliente) y proteger rutas según el rol.
+4. Añadir roles de usuario (admin y cliente) y proteger rutas según el rol.
 ```js routes/index.routes.js
 import { authenticateToken as authMiddleware } from '../middlewares/auth.js' 
 
-// Rutas de menu(dishes) con protección de admin
-router.post('/dishes', authMiddleware, createDish) // createDish(dishData)
-router.patch('/dishes/deletedAt/:id', authMiddleware, updateDishdeletedAt) // updateDish(id)
-router.patch('/dishes/updateField/:id', authMiddleware, updateDishField) // updateDishField (id, campo, valor)
-router.delete('/dishes', authMiddleware, deleteDish) //deleteDish(id)
+// Rutas /admin/dishes protegidas solo para admin
+router.get('/admin/dishes',authMiddleware, getAllDishes) // getAllDishes()
+router.post('/admin/dishes', authMiddleware, createDish) // createDish(dishData)
+router.patch('/admin/dishes/:id', authMiddleware, updateDish) // updateDish(id, dishData)
+router.delete('/admin/dishes/:id', authMiddleware, deleteDish) // deleteDish(id)
+router.get('/admin/dishes/:id', authMiddleware, getDishById); // getDishById(id)
+router.patch('/admin/dishes/deletedAt/:id', authMiddleware, softDeleteDish) // softDeleteDish(id)
+```
 
+5. Update controller de Users para añadir roles de usuario (isAdmin)
+```js controllers/user.controller.js
+export const getAllUsers = async (req, res, next) => {
+    try {
+        const users = await User.find();
+        if(users.length === 0) {
+            responseAPI.msg = "No se han encontrado usuarios en la BBDD."
+            responseAPI.count = 0;
+            responseAPI.status = "error"
+            responseAPI.data = null
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Usuarios encontrados correctamente"
+        responseAPI.count = users.length;
+        responseAPI.data = users;
+        responseAPI.status = "ok"
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 
+export const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, username, street, city, cp, isAdmin } = req.body;
 
+        // Actualiza todos los campos mandados por el front
+        const updatedUser = await Menu.findByIdAndUpdate(
+            id,
+            { name:name, username:username, street:street, city:city, cp:cp, isAdmin:isAdmin },
+            { new: true }
+        );
 
+        if (!updatedUser) {
+            responseAPI.msg = `Plato con id ${id} no encontrado`;
+            responseAPI.status = "error";
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Plato actualizado con éxito";
+        responseAPI.status = "ok"
+        responseAPI.data = updatedUser;
+        responseAPI.count = 1;
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 
+// deleteUserPermanently(id). No se recomendable pero es parte del CRUD. 
+// Elimina un documento entero de la BBDD.
+export const deleteUserPermanently = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const deletedUser = await Menu.findByIdAndDelete(id)
+        if (!deletedUser) {
+            responseAPI.msg = `Plato con id ${id} no encontrado`;
+            responseAPI.count = 0;
+            responseAPI.data = null;
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Plato eliminado correctamente";
+        responseAPI.count = 1;
+        responseAPI.status = "ok"
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+``` 
 
+7. Rutas para Users protegidas solo para admin
+```js routes/index.routes.js
+// Rutas /admin/users
+router.get('/admin/users', authMiddleware, getAllUsers); // getAllUsers()
+router.patch('/admin/users/:id', authMiddleware, updateUser); // updateUser(id)
+router.delete('/admin/users/:id', authMiddleware, deleteUserPermanently); // deleteUserPermanently(id)
+```
 
+8. Crear modelo Events data/mongodb.js
+```js
+// Modelo Evento
+const eventSchema = new mongoose.Schema({
+    title: 
+    {
+        type: String, 
+        required: true 
 
+    },
+    description: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    date: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    time: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    deletedAt: {
+        type: Date,
+        default: null
+    },
+    img: 
+    {
+        type: String, 
+        required: true 
+
+    }
+}, {
+    timestamps: true,
+    strict: false,
+    versionKey: false
+});
+export const Event = mongoose.model('Event', eventSchema);
+```
+
+9. Controlador para los eventos.
+```js controllers/event.controller.js
+import { Event } from "../data/mongobd.js";
+import connectDB from "../data/mongobd.js";
+
+// Conexión a la BBDD
+connectDB();
+
+const responseAPI = {
+    data: null,
+    msg: "",
+    count: 0,
+    status: "ok"
+};
+
+// getAllEvents()  Obtiene todos los eventos
+export const getAllEvents = async (req, res, next) => {
+    try {
+        const events = await Event.find();
+        if (events.length === 0) {
+            responseAPI.msg = "No se han encontrado eventos";
+            responseAPI.count = 0;
+            responseAPI.status = "error";
+            responseAPI.data = null;
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Eventos obtenidos con éxito";
+        responseAPI.count = events.length;
+        responseAPI.data = events;
+        responseAPI.status = "ok";
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// getEventById(id) Obtiene un evento por su id
+export const getEventById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const event = await Event.findById(id);
+        if (!event) {
+            responseAPI.msg = "Evento no encontrado";
+            responseAPI.count = 0;
+            responseAPI.status = "error";
+            responseAPI.data = null;
+            return res.status(404).json(responseAPI);
+        }
+        responseAPI.msg = "Evento encontrado con éxito";
+        responseAPI.count = 1;
+        responseAPI.data = event;
+        responseAPI.status = "ok";
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// createEvent(eventData) Crea un nuevo evento
+export const createEvent = async (req, res, next) => {
+    try {
+        const { title, description, date, time, img } = req.body;
+        const newEvent = new Event({
+            title,
+            description,
+            date,
+            time,
+            img
+        });
+        await newEvent.save();
+
+        responseAPI.msg = "Evento creado correctamente";
+        responseAPI.count = 1;
+        responseAPI.data = newEvent;
+        responseAPI.status = "ok";
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// softDeleteEvent(id) Marca un evento como eliminado (soft delete)
+export const softDeleteEvent = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const date = new Date();
+        const deletedEvent = await Event.findByIdAndUpdate(
+            id,
+            { deletedAt: date },
+            { new: true }
+        );
+
+        if (!deletedEvent) {
+            responseAPI.msg = `Evento con id ${id} no encontrado`;
+            responseAPI.count = 0;
+            responseAPI.status = "error";
+            responseAPI.data = null;
+            return res.status(404).json(responseAPI);
+        }
+
+        responseAPI.msg = `Evento con id ${id} marcado como eliminado`;
+        responseAPI.count = 1;
+        responseAPI.data = deletedEvent;
+        responseAPI.status = "ok";
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+// updateEvent(id) Actualiza un evento existente
+export const updateEvent = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { title, description, date, time, img } = req.body;
+
+        const updatedEvent = await Event.findByIdAndUpdate(
+            id,
+            { title, description, date, time, img },
+            { new: true }
+        );
+
+        if (!updatedEvent) {
+            responseAPI.msg = `Evento con id ${id} no encontrado`;
+            responseAPI.status = "error";
+            return res.status(404).json(responseAPI);
+        }
+
+        responseAPI.msg = "Evento actualizado con éxito";
+        responseAPI.status = "ok";
+        responseAPI.data = updatedEvent;
+        responseAPI.count = 1;
+        res.status(200).json(responseAPI);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+```
+
+11. Rutas para Events en index.routes.js
+```js routes/index.routes.js
+import { getAllEvents, getEventById, createEvent, updateEvent, softDeleteEvent } from "../controllers/events.controller.js"
+const router = Router(); 
+
+// Rutas /admin/events
+router.get("/admin/events", authMiddleware, getAllEvents); // getAllEvents()
+router.get("/admin/events/:id", authMiddleware, getEventById); // getEventById(id)
+router.post("/admin/events", authMiddleware, createEvent); // createEvent(eventData)
+router.patch("/admin/events/:id", authMiddleware, updateEvent); // updateEvent(id, eventData)
+router.patch("/admin/events/deletedAt/:id", authMiddleware, softDeleteEvent); // softDeleteEvent(id)
+
+// Rutas /events
+router.get("/events", getAllEvents); // getEvents()
+```
+
+10. Crear modelo Orders data/mongodb.js
+```js
+// Modelo Pedido
+// Modelo Pedido
+const orderSchema = new mongoose.Schema({
+    userId: 
+    { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
+    },
+    items: [
+        {
+            menuId: 
+            { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'Menu', required: true 
+            },
+            quantity: 
+            { 
+                type: Number, 
+                required: true 
+            }
+        }
+],
+    totalPrice: 
+    {   
+        type: Number, 
+        required: true 
+    },
+    orderStatus: 
+    {
+        type: String, 
+        default: 'pending' 
+    }
+}, {
+    timestamps: true,
+    strict: false,
+    versionKey: false
+});
+
+export const Order = mongoose.model('Order', orderSchema);
 
 
 

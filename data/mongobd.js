@@ -84,7 +84,89 @@ const menuSchema = new mongoose.Schema({
     versionKey: false
 });
 
+const eventSchema = new mongoose.Schema({
+    title: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    description: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    date: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    time: 
+    {
+        type: String, 
+        required: true 
+
+    },
+    deletedAt: {
+        type: Date,
+        default: null
+    },
+    img: 
+    {
+        type: String, 
+        required: true 
+
+    }
+}, {
+    timestamps: true,
+    strict: false,
+    versionKey: false
+});
+
+// Modelo Pedido
+const orderSchema = new mongoose.Schema({
+    userId: 
+    { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
+    },
+    items: [
+        {
+            menuId: 
+            { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'Menu', required: true 
+            },
+            quantity: 
+            { 
+                type: Number, 
+                required: true 
+            }
+        }
+],
+    totalPrice: 
+    {   
+        type: Number, 
+        required: true 
+    },
+    orderStatus: 
+    {
+        type: String, 
+        default: 'pending' 
+    }
+}, {
+    timestamps: true,
+    strict: false,
+    versionKey: false
+});
+
+
 // Exportar el modelos
+export const Order = mongoose.model('Order', orderSchema);
+export const Event = mongoose.model('Event', eventSchema);
 export const User = mongoose.model('User', userSchema);
 export const Menu = mongoose.model('Menu', menuSchema);
 export default connectDB;

@@ -10,8 +10,6 @@ const responseAPI = {
     status: "ok"
 };
 
-// https://picsum.photos/200
-
 // getAllDishes()  Obtiene todos los platos del menuSchema
 export const getAllDishes = async (req, res, next) => {
     try {
@@ -108,7 +106,7 @@ export const createDish = async (req, res, next) => {
 };
 
 // updateDish(id) Este va a ser un soft delete 
-export const updateDishdeletedAt = async (req, res, next) => {
+export const softDeleteDish = async (req, res, next) => {
     try {
         const { id } = req.params;
         const date = new Date();
@@ -135,9 +133,6 @@ export const updateDishdeletedAt = async (req, res, next) => {
     }
 }
 
-// updateDish (id, campo, valor) Cambia todos los valores del plato segun su id.
-// Recibe del front el campo (type, name, description...) y el nuevo valor. 
-// key: value
 export const updateDish = async (req, res, next) => {
     try {
         const { id } = req.params;
