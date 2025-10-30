@@ -65,7 +65,11 @@ export const userLogin = async (req, res, next) => {
         responseAPI.msg = "Login exitoso.";
         responseAPI.count = 1;
         responseAPI.status = "ok"
-        responseAPI.data = { name: user.name, username: user.username, admin: user.isAdmin || false, token};
+        responseAPI.data = { _id: user._id,
+                            name: user.name,
+                            username: user.username,
+                            admin: user.isAdmin || false,
+                            token};
         res.status(200).json(responseAPI);
     } catch (error) {
         console.error(error);

@@ -5,6 +5,9 @@ import { getAllDishes, createDish, softDeleteDish, updateDish, deleteDish } from
 import { getAllUsers, updateUser, deleteUserPermanently, getUserById } from "../controllers/user.controller.js";
 import { getDishesByType, getDishById } from "../controllers/menu.controller.js";
 import { getAllEvents, getEventById, createEvent, updateEvent, softDeleteEvent } from "../controllers/events.controller.js"
+import { getAllOrders, getOrdersByUser, createOrder, updateOrder, deleteOrderPermanently} from "../controllers/orders.controller.js";
+
+
 const router = Router();
 
 // Rutas especiales
@@ -39,5 +42,12 @@ router.patch("/admin/events/deletedAt/:id", authMiddleware, softDeleteEvent); //
 
 // Rutas /events
 router.get("/events", getAllEvents); // getEvents()
+
+// Rutas /orders
+router.post("/orders", createOrder); // createOrder()
+router.get("/orders/all", getAllOrders); // getAllOrders()
+router.get("/orders/:id", getOrdersByUser); // getOrdersByUser(id)
+router.patch("/orders/:id", authMiddleware, updateOrder); // updateEvent(id, oderData)
+router.delete("/orders/:id", authMiddleware, deleteOrderPermanently); // deleteOrderPermanently(id)
 
 export default router;
