@@ -1,3 +1,6 @@
+https://restaurante-backend-pink.vercel.app/
+
+
 # 1ª Fase del Backend del Proyecto Restaurante
 En esta primera fase del backend crearemos la estructura básica del servidor con Express y MongoDB. Implementaremos la funcionalidad de autenticación de usuarios del modelo 'User' utilizando Bcrypt para el hash de contraseñas y JsonWebToken para la generación de tokens JWT. Además, estableceremos rutas protegidas mediante un middleware de autenticación.
 
