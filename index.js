@@ -46,7 +46,7 @@ app.use((err, req, res, next) => {
 app.get("/", (req, res) => {
     res.setHeader("Content-type", "text/html");
     const appCorreos = `<h1>Buenvenido a mi API de correos usando MongoDB</h1>
-    <a href="http://localhost:3000/api/v1/events">Menú</a>`;
+    <a href="http://localhost:3000/api/v1/events">Eventos</a>`;
     res.send(appCorreos);
 })
 
