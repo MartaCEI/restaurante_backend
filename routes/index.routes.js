@@ -6,6 +6,7 @@ import { getAllUsers, updateUser, deleteUserPermanently, getUserById } from "../
 import { getDishesByType, getDishById } from "../controllers/menu.controller.js";
 import { getAllEvents, getEventById, createEvent, updateEvent, softDeleteEvent } from "../controllers/events.controller.js"
 import { getAllOrders, getOrdersByUser, createOrder, updateOrder, deleteOrderPermanently} from "../controllers/orders.controller.js";
+import { upload } from "../middlewares/multer.js";
 
 
 const router = Router();
@@ -49,5 +50,20 @@ router.get("/orders/all", getAllOrders); // getAllOrders()
 router.get("/orders/:id", getOrdersByUser); // getOrdersByUser(id)
 router.patch("/orders/:id", authMiddleware, updateOrder); // updateEvent(id, oderData)
 router.delete("/orders/:id", authMiddleware, deleteOrderPermanently); // deleteOrderPermanently(id)
+
+// Upload de archivos con multer
+router.post('/upload', upload.single('image'), (req, res, next) => {
+    try {
+        res.status(200).json({
+            msg: "Archivo subido correctamente",
+            file: req.file,
+            body: req.body,
+            peso: `${Math.round(req.file.size / 1024)} Kbytes`,
+            url: `${DOMAIN}${PORT}/uploads/${req.file.filename}`
+        });
+    } catch (e) {
+        res.status(500).json({error: "Error en el servidor"})
+    }
+});
 
 export default router;

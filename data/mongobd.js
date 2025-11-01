@@ -72,7 +72,6 @@ const menuSchema = new mongoose.Schema({
         type: Number,
         required: true 
     },
-    imageUrl: String,
     deletedAt: { 
         type: String,
         default: null  
@@ -113,11 +112,10 @@ const eventSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    img: 
+    image: 
     {
         type: String, 
         required: true 
-
     }
 }, {
     timestamps: true,

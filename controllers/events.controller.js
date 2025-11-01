@@ -65,7 +65,7 @@ export const createEvent = async (req, res, next) => {
             description,
             date,
             time,
-            img
+            imagen: "https://img.freepik.com/vector-gratis/concepto-feliz-cumpleanos_23-2148484501.jpg"
         });
         await newEvent.save();
 
