@@ -59,7 +59,7 @@ export const getEventById = async (req, res, next) => {
 // createEvent(eventData) Crea un nuevo evento
 export const createEvent = async (req, res, next) => {
     try {
-        const { title, description, date, time, img } = req.body;
+        const { title, description, date, time } = req.body;
         const newEvent = new Event({
             title,
             description,
