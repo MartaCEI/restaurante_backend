@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 // Leer archivo public
 app.use(express.static(path.join(__dirname, "public")));
 // Si usas Multer para manejar cargas de archivos.
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // -------------- Rutas API --------------
 app.use("/api/v1/", indexRoutes);
