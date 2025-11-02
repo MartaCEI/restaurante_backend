@@ -59,15 +59,14 @@ export const getEventById = async (req, res, next) => {
 // createEvent(eventData) Crea un nuevo evento
 export const createEvent = async (req, res, next) => {
     try {
-        const { title, description, date, time } = req.body;
         const newEvent = new Event({
             title,
             description,
             date,
             time,
-            image: "imagen"
+            image: "imagen.jpg",
+            deletedAt: null
         });
-        await newEvent.save();
 
         responseAPI.msg = "Evento creado correctamente";
         responseAPI.count = 1;
